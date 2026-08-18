@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Anomaly Flags — Sentinel{% endblock %}
+{% block page_title %}Anomaly Detection Results{% endblock %}
+{% block content %}
+<div class="page-hdr">
+  <div><div class="page-h">Anomaly Flags</div><div class="page-s">{{ pagination.total }} total detections</div></div>
+</div>
+<div class="card">
+  <form method="GET" class="filters">
+    <select name="severity" class="form-control"><option value="">All Severities</option><option value="high" {% if severity=="high" %}selected{% endif %}>Critical</option><option value="medium" {% if severity=="medium" %}selected{% endif %}>Medium</option><option value="low" {% if severity=="low" %}selected{% endif %}>Low</option></select>
+    <select name="status" class="form-control"><option value="">All Statuses</option><option value="open" {% if status=="open" %}selected{% endif %}>Open</option><option value="reviewed" {% if status=="reviewed" %}selected{% endif %}>Reviewed</option><option value="escalated" {% if status=="escalated" %}selected{% endif %}>Escalated</option></select>
+    <select name="rule" class="form-control"><option value="">All Rules</option>{% for r in rules %}<option value="{{ r }}" {% if r==rule %}selected{% endif %}>{{ r }}</option>{% endfor %}</select>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="{{ url_for('transactions.flags') }}" class="btn btn-ghost btn-sm">Clear</a>
+  </form>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Transaction</th><th>Date</th><th>Amount (KES)</th><th>Rule</th><th>Severity</th><th>Status</th><th>AI Analysis & Actions</th></tr></thead>
+    <tbody>{% for f in flags %}<tr>
+      <td class="muted">{{ f.id }}</td>
+      <td><strong>{{ f.transaction.payee[:28] }}</strong><br><span class="muted">{{ f.transaction.department or "—" }}</span></td>
+      <td class="muted">{{ f.transaction.date }}</td>
+      <td><strong>{{ "{:,.2f}".format(f.transaction.amount) }}</strong></td>
+      <td><span class="chip">{{ f.rule_triggered }}</span></td>
+      <td><span class="badge badge-{{ f.severity }}">{{ f.severity.upper() }}</span></td>
+      <td><span class="badge badge-{{ f.status }}">{{ f.status.capitalize() }}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+          <button class="btn btn-ai btn-xs ai-flag-btn" data-flag-id="{{ f.id }}">AI Analysis</button>
+          {% if f.status == "open" %}
+          <form method="POST" action="{{ url_for('transactions.review_flag', flag_id=f.id) }}" style="display:flex;gap:4px;">
+            <button name="action" value="reviewed" class="btn btn-success btn-xs">Reviewed</button>
+            <button name="action" value="escalated" class="btn btn-danger btn-xs">Escalate</button>
+          </form>{% endif %}
+        </div>
+        <div id="ai-box-{{ f.id }}" style="display:none;"></div>
+        <div class="muted" style="font-size:11px;max-width:280px;">{{ f.description }}</div>
+      </td>
+    </tr>{% else %}<tr><td colspan="8" class="tbl-empty">No flagged transactions found.</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% if pagination.pages > 1 %}
+  <div class="pager">
+    {% if pagination.has_prev %}<a href="{{ url_for('transactions.flags', page=pagination.prev_num, severity=severity, status=status, rule=rule) }}" class="pg">Previous</a>{% endif %}
+    {% for p in pagination.iter_pages() %}{% if p %}<a href="{{ url_for('transactions.flags', page=p, severity=severity, status=status, rule=rule) }}" class="pg {% if p==pagination.page %}active{% endif %}">{{ p }}</a>{% endif %}{% endfor %}
+    {% if pagination.has_next %}<a href="{{ url_for('transactions.flags', page=pagination.next_num, severity=severity, status=status, rule=rule) }}" class="pg">Next</a>{% endif %}
+    <span class="pg-info">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+  </div>{% endif %}
+</div>
+{% endblock %}

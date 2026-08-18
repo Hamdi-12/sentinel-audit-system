@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Audit Log — Sentinel{% endblock %}
+{% block page_title %}System Audit Log{% endblock %}
+{% block content %}
+<div class="card">
+  <form method="GET" class="filters mb2">
+    <select name="action" class="form-control"><option value="">All Actions</option>{% for a in actions %}<option value="{{ a }}" {% if a==action_filter %}selected{% endif %}>{{ a }}</option>{% endfor %}</select>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="{{ url_for('admin.logs') }}" class="btn btn-ghost btn-sm">Clear</a>
+  </form>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>Action</th><th>Detail</th><th>User</th><th>IP Address</th><th>Timestamp</th></tr></thead>
+    <tbody>{% for log in logs %}<tr>
+      <td class="muted">{{ log.id }}</td>
+      <td><span class="chip">{{ log.action }}</span></td>
+      <td class="muted" style="font-size:12px;max-width:240px;">{{ log.detail or "—" }}</td>
+      <td class="muted">{{ log.actor.username if log.actor else "System" }}</td>
+      <td class="muted">{{ log.ip_address or "—" }}</td>
+      <td class="muted">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+    </tr>{% else %}<tr><td colspan="6" class="tbl-empty">No audit log entries found.</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% if pagination.pages > 1 %}
+  <div class="pager">
+    {% if pagination.has_prev %}<a href="{{ url_for('admin.logs', page=pagination.prev_num, action=action_filter) }}" class="pg">Previous</a>{% endif %}
+    {% for p in pagination.iter_pages() %}{% if p %}<a href="{{ url_for('admin.logs', page=p, action=action_filter) }}" class="pg {% if p==pagination.page %}active{% endif %}">{{ p }}</a>{% endif %}{% endfor %}
+    {% if pagination.has_next %}<a href="{{ url_for('admin.logs', page=pagination.next_num, action=action_filter) }}" class="pg">Next</a>{% endif %}
+  </div>{% endif %}
+</div>
+{% endblock %}

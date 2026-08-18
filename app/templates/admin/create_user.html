@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Create User — Sentinel{% endblock %}
+{% block page_title %}Create User Account{% endblock %}
+{% block content %}
+<div style="max-width:500px;">
+  <div class="card">
+    <div class="card-title">New User Details</div>
+    <form method="POST">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Username *</label><input name="username" type="text" class="form-control" required minlength="3"></div>
+        <div class="form-group"><label class="form-label">Full Name</label><input name="full_name" type="text" class="form-control"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email *</label><input name="email" type="email" class="form-control" required></div>
+      <div class="form-group"><label class="form-label">Role</label><select name="role" class="form-control"><option value="auditor">Auditor</option><option value="admin">Administrator</option></select></div>
+      <div class="form-group"><label class="form-label">Password *</label><input name="password" type="password" class="form-control" required minlength="8"><div class="form-hint">Minimum 8 characters. User should change on first login.</div></div>
+      <div class="flex-end"><a href="{{ url_for('admin.users') }}" class="btn btn-ghost">Cancel</a><button type="submit" class="btn btn-primary">Create Account</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

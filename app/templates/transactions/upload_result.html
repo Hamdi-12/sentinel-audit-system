@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Analysis Complete — Sentinel{% endblock %}
+{% block page_title %}AI Audit Analysis Complete{% endblock %}
+{% block content %}
+<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:22px;">
+  <div class="stat blue"><div class="stat-label">Imported</div><div class="stat-val">{{ saved }}</div><div class="stat-sub">Transactions processed</div></div>
+  <div class="stat red"><div class="stat-label">Critical</div><div class="stat-val">{{ high }}</div><div class="stat-sub">Immediate action required</div></div>
+  <div class="stat orange"><div class="stat-label">Medium</div><div class="stat-val">{{ medium }}</div><div class="stat-sub">Review within 48h</div></div>
+  <div class="stat green"><div class="stat-label">Low</div><div class="stat-val">{{ low }}</div><div class="stat-sub">Monitor and log</div></div>
+</div>
+{% if ai_report %}
+<div class="ai-report-box">
+  <div class="ai-report-header">
+    <div class="ai-live-dot"></div>
+    <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--hi);background:rgba(0,176,255,.12);padding:4px 12px;border-radius:4px;border:1px solid rgba(0,176,255,.25);">Sentinel AI — Batch Intelligence Report</span>
+    <span style="font-size:11px;color:var(--muted);">Generated automatically on upload by Claude (Anthropic)</span>
+  </div>
+  <div class="ai-report-text">{{ ai_report }}</div>
+</div>
+{% endif %}
+{% if new_flags %}
+<div class="card">
+  <div class="card-title">Detected Anomalies — Individual AI Forensic Analysis</div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Flag</th><th>Transaction</th><th>Amount (KES)</th><th>Rule</th><th>Severity</th><th>Action</th></tr></thead>
+    <tbody>{% for flag in new_flags %}<tr>
+      <td class="muted">#{{ flag.id }}</td>
+      <td><strong>{{ flag.transaction.payee[:28] }}</strong><br><span class="muted">{{ flag.transaction.date }} | {{ flag.transaction.department or "N/A" }}</span></td>
+      <td><strong>{{ "{:,.2f}".format(flag.transaction.amount) }}</strong></td>
+      <td><span class="chip">{{ flag.rule_triggered }}</span></td>
+      <td><span class="badge badge-{{ flag.severity }}">{{ flag.severity.upper() }}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-ai btn-xs ai-flag-btn" data-flag-id="{{ flag.id }}">AI Analysis</button>
+          {% if flag.status == "open" %}
+          <form method="POST" action="{{ url_for('transactions.review_flag', flag_id=flag.id) }}" style="display:flex;gap:4px;">
+            <button name="action" value="reviewed" class="btn btn-success btn-xs">Reviewed</button>
+            <button name="action" value="escalated" class="btn btn-danger btn-xs">Escalate</button>
+          </form>{% endif %}
+        </div>
+        <div id="ai-box-{{ flag.id }}" style="display:none;margin-top:8px;"></div>
+        <div class="muted" style="font-size:11px;margin-top:5px;max-width:280px;">{{ flag.description }}</div>
+      </td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% else %}
+<div class="card" style="text-align:center;padding:40px;">
+  <div style="font-size:16px;font-weight:700;color:var(--green);margin-bottom:8px;">No Anomalies Detected</div>
+  <div class="muted">All {{ saved }} transactions passed all detection checks.</div>
+</div>
+{% endif %}
+<div style="display:flex;gap:12px;margin-top:20px;">
+  <a href="{{ url_for('transactions.flags') }}" class="btn btn-primary">View All Flags</a>
+  <a href="{{ url_for('dashboard.index') }}" class="btn btn-ghost">Dashboard</a>
+  <a href="{{ url_for('transactions.upload') }}" class="btn btn-ghost">Upload Another</a>
+  <a href="{{ url_for('chat.index') }}" class="btn btn-ai">Ask Sentinel AI</a>
+  <a href="{{ url_for('reports.generate') }}" class="btn btn-ghost">Generate PDF Report</a>
+</div>
+{% endblock %}

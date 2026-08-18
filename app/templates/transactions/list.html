@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Transactions — Sentinel{% endblock %}
+{% block page_title %}Transaction Records{% endblock %}
+{% block content %}
+<div class="page-hdr">
+  <div><div class="page-h">All Transactions</div><div class="page-s">{{ pagination.total }} records</div></div>
+  <div style="display:flex;gap:10px;">
+    <a href="{{ url_for('transactions.sample_csv') }}" class="btn btn-ghost btn-sm">Sample CSV</a>
+    <a href="{{ url_for('transactions.manual_entry') }}" class="btn btn-ghost btn-sm">Manual Entry</a>
+    <a href="{{ url_for('transactions.upload') }}" class="btn btn-primary btn-sm">Upload File</a>
+  </div>
+</div>
+<div class="card">
+  <form method="GET" class="filters">
+    <input name="q" type="text" class="form-control" placeholder="Search payee or reference..." value="{{ search }}">
+    <select name="dept" class="form-control"><option value="">All Departments</option>{% for d in departments %}<option value="{{ d }}" {% if d==dept %}selected{% endif %}>{{ d }}</option>{% endfor %}</select>
+    <button type="submit" class="btn btn-primary btn-sm">Search</button>
+    <a href="{{ url_for('transactions.list_all') }}" class="btn btn-ghost btn-sm">Clear</a>
+  </form>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>Date</th><th>Payee</th><th>Department</th><th>Amount (KES)</th><th>Type</th><th>Flags</th><th>Uploaded</th>{% if current_user.is_admin %}<th></th>{% endif %}</tr></thead>
+    <tbody>{% for tx in transactions %}<tr>
+      <td class="muted">{{ tx.id }}</td>
+      <td class="muted">{{ tx.date }}</td>
+      <td><strong>{{ tx.payee }}</strong>{% if tx.reference_no %}<br><span class="muted">{{ tx.reference_no }}</span>{% endif %}</td>
+      <td class="muted">{{ tx.department or "—" }}</td>
+      <td><strong>{{ "{:,.2f}".format(tx.amount) }}</strong></td>
+      <td class="muted">{{ tx.transaction_type or "—" }}</td>
+      <td>{% set fl=tx.flags.all() %}{% if fl %}{% for f in fl %}<span class="badge badge-{{ f.severity }}" title="{{ f.description }}">{{ f.rule_triggered[:14] }}</span> {% endfor %}{% else %}<span class="muted">Clean</span>{% endif %}</td>
+      <td class="muted">{{ tx.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+      {% if current_user.is_admin %}<td><form method="POST" action="{{ url_for('transactions.delete', tx_id=tx.id) }}" style="display:inline;"><button class="btn btn-danger btn-xs" data-confirm="Permanently delete this transaction and all its flags?">Delete</button></form></td>{% endif %}
+    </tr>{% else %}<tr><td colspan="9" class="tbl-empty">No transactions found.</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% if pagination.pages > 1 %}
+  <div class="pager">
+    {% if pagination.has_prev %}<a href="{{ url_for('transactions.list_all', page=pagination.prev_num, q=search, dept=dept) }}" class="pg">Previous</a>{% endif %}
+    {% for p in pagination.iter_pages(left_edge=1,right_edge=1,left_current=2,right_current=2) %}{% if p %}<a href="{{ url_for('transactions.list_all', page=p, q=search, dept=dept) }}" class="pg {% if p==pagination.page %}active{% endif %}">{{ p }}</a>{% else %}<span class="pg" style="cursor:default;">...</span>{% endif %}{% endfor %}
+    {% if pagination.has_next %}<a href="{{ url_for('transactions.list_all', page=pagination.next_num, q=search, dept=dept) }}" class="pg">Next</a>{% endif %}
+    <span class="pg-info">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+  </div>{% endif %}
+</div>
+{% endblock %}

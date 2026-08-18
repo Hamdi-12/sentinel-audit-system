@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Control Panel — Sentinel{% endblock %}
+{% block page_title %}Administration Control Panel{% endblock %}
+{% block content %}
+<div class="stats-grid">
+  <div class="stat blue"><div class="stat-label">Users</div><div class="stat-val">{{ stats.users }}</div></div>
+  <div class="stat blue"><div class="stat-label">Transactions</div><div class="stat-val">{{ stats.transactions }}</div></div>
+  <div class="stat red"><div class="stat-label">Open Flags</div><div class="stat-val">{{ stats.open_flags }}</div></div>
+  <div class="stat green"><div class="stat-label">Reports</div><div class="stat-val">{{ stats.reports }}</div></div>
+</div>
+<div class="g2">
+  <div class="card">
+    <div class="card-title">Quick Actions</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">Create User Account</a>
+      <a href="{{ url_for('admin.users') }}" class="btn btn-ghost">Manage All Users</a>
+      <a href="{{ url_for('admin.logs') }}" class="btn btn-ghost">Full System Audit Log</a>
+      <a href="{{ url_for('reports.generate') }}" class="btn btn-ghost">Generate AI Report</a>
+      <a href="{{ url_for('chat.index') }}" class="btn btn-ai">Open Sentinel AI Chat</a>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Recent System Activity</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Action</th><th>User</th><th>Time</th></tr></thead>
+      <tbody>{% for log in recent_logs %}<tr>
+        <td><span class="chip">{{ log.action }}</span>{% if log.detail %}<br><span class="muted" style="font-size:11px;">{{ log.detail[:55] }}</span>{% endif %}</td>
+        <td class="muted">{{ log.actor.username if log.actor else "System" }}</td>
+        <td class="muted">{{ log.timestamp.strftime('%m-%d %H:%M') }}</td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Upload — Sentinel{% endblock %}
+{% block page_title %}Upload Transaction File{% endblock %}
+{% block content %}
+<div style="max-width:680px;">
+  <div class="card mb3">
+    <div class="card-title">Import Transactions</div>
+    <form method="POST" enctype="multipart/form-data">
+      <div class="dropzone" id="dropzone">
+        <div class="dz-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg></div>
+        <div class="dz-text">Click to select or drag and drop your CSV file</div>
+        <div class="dz-sub">Only CSV files supported — Maximum 10MB</div>
+        <input type="file" id="file-input" name="file" accept=".csv" required style="display:none;">
+      </div>
+      <div style="display:flex;gap:12px;margin-top:18px;">
+        <button type="submit" class="btn btn-primary">Import and Run AI Analysis</button>
+        <a href="{{ url_for('transactions.sample_csv') }}" class="btn btn-ghost">Download Sample CSV</a>
+      </div>
+    </form>
+  </div>
+  <div class="card mb3">
+    <div class="card-title">Required CSV Format</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Column</th><th>Required</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><strong>date</strong></td><td><span class="badge badge-high">Required</span></td><td class="muted">2024-01-15</td></tr>
+        <tr><td><strong>payee</strong></td><td><span class="badge badge-high">Required</span></td><td class="muted">Acme Supplies Ltd</td></tr>
+        <tr><td><strong>amount</strong></td><td><span class="badge badge-high">Required</span></td><td class="muted">12500.00</td></tr>
+        <tr><td>department</td><td><span class="badge badge-low">Optional</span></td><td class="muted">Procurement</td></tr>
+        <tr><td>description</td><td><span class="badge badge-low">Optional</span></td><td class="muted">Office supplies Q1</td></tr>
+        <tr><td>transaction_type</td><td><span class="badge badge-low">Optional</span></td><td class="muted">Payment</td></tr>
+        <tr><td>reference_no</td><td><span class="badge badge-low">Optional</span></td><td class="muted">REF-2024-001</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Active AI Detection Rules</div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      {% for sev,title,desc in [
+        ("high","High-Value Transaction Detection","Flags any single transaction exceeding KES 50,000. Large unauthorized payments are the most common embezzlement vector."),
+        ("high","Duplicate Entry Detection","Identifies identical payee and amount combinations within 24 hours. Duplicate payments are a primary vehicle for double-billing fraud."),
+        ("medium","High-Frequency Pattern Detection","Detects when one department submits more than 10 transactions within 24 hours — a structuring (smurfing) indicator."),
+        ("low","Off-Hours Entry Detection","Flags transactions uploaded outside 08:00-18:00 Mon-Fri. Off-hours access often indicates unauthorized system use.")
+      ] %}
+      <div style="display:flex;gap:14px;align-items:flex-start;{% if not loop.last %}padding-bottom:14px;border-bottom:1px solid var(--border){% endif %}">
+        <span class="badge badge-{{ sev }}" style="margin-top:2px;flex-shrink:0;">{{ sev.upper() }}</span>
+        <div><strong style="color:var(--text);">{{ title }}</strong><p class="muted" style="margin-top:4px;line-height:1.6;">{{ desc }}</p></div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

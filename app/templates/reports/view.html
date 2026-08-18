@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Report #{{ report.id }} — Sentinel{% endblock %}
+{% block page_title %}Audit Report{% endblock %}
+{% block content %}
+<div class="page-hdr">
+  <div><div class="page-h">{{ report.title }}</div><div class="page-s">Generated {{ report.report_date.strftime('%Y-%m-%d at %H:%M UTC') }} by {{ report.generator.full_name or report.generator.username }}</div></div>
+  <a href="{{ url_for('reports.download', report_id=report.id) }}" class="btn btn-primary">Download PDF</a>
+</div>
+<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+  <div class="stat blue"><div class="stat-label">Transactions</div><div class="stat-val">{{ report.total_transactions }}</div></div>
+  <div class="stat red"><div class="stat-label">Critical</div><div class="stat-val">{{ report.high_severity }}</div></div>
+  <div class="stat orange"><div class="stat-label">Medium</div><div class="stat-val">{{ report.medium_severity }}</div></div>
+  <div class="stat green"><div class="stat-label">Low</div><div class="stat-val">{{ report.low_severity }}</div></div>
+</div>
+{% if report.ai_summary %}
+<div class="ai-report-box">
+  <div class="ai-report-header">
+    <div class="ai-live-dot"></div>
+    <span style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--hi);background:rgba(0,176,255,.12);padding:4px 12px;border-radius:4px;border:1px solid rgba(0,176,255,.25);">Sentinel AI — Executive Intelligence Report</span>
+  </div>
+  <div class="ai-report-text">{{ report.ai_summary }}</div>
+</div>
+{% endif %}
+<div class="card mt2">
+  <p class="muted">The full flagged transactions log with individual AI forensic analyses and the complete transaction register are included in the PDF download.</p>
+  <div style="display:flex;gap:10px;margin-top:14px;">
+    <a href="{{ url_for('reports.list_all') }}" class="btn btn-ghost btn-sm">All Reports</a>
+    <a href="{{ url_for('reports.generate') }}" class="btn btn-primary btn-sm">Generate Another</a>
+  </div>
+</div>
+{% endblock %}

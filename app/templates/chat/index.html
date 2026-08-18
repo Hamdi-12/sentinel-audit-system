@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Sentinel AI Chat{% endblock %}
+{% block page_title %}Sentinel AI Intelligence{% endblock %}
+{% block content %}
+<div class="chat-wrap">
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="chat-status"></div>
+      <div>
+        <div class="chat-title">Sentinel AI</div>
+        <div class="chat-sub">Forensic Audit Intelligence — Connected to live database</div>
+      </div>
+    </div>
+    <div id="chat-msgs" class="chat-msgs">
+      <div class="ai-msg">
+        <div class="msg-label">Sentinel AI</div>
+        <div class="msg-bubble ai">I am Sentinel AI, your forensic audit intelligence assistant. I have full real-time access to your transaction database, anomaly flags, and audit history.
+
+You can ask me anything about your audit data, for example:
+
+— What are the most critical flags right now?
+— Explain the duplicate transactions in Procurement
+— Which department has the highest fraud risk?
+— What fraud schemes do the current flags suggest?
+— Give me an executive audit summary
+— What should I investigate first?
+
+How can I assist your investigation?</div>
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" class="form-control" placeholder="Ask Sentinel AI about your audit data..." autocomplete="off">
+      <button id="send-btn" class="btn btn-primary">Send</button>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px;overflow-y:auto;">
+    <div class="card">
+      <div class="card-title">Suggested Questions</div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        {% for s in [
+          "What are the highest risk transactions right now?",
+          "Summarise all open anomaly flags",
+          "Which payee appears most in flagged transactions?",
+          "What fraud schemes are indicated by current flags?",
+          "Which department has the most suspicious activity?",
+          "What should I investigate first?",
+          "Are there any duplicate payment patterns?",
+          "Give me a full executive audit summary",
+          "What is the total value of flagged transactions?",
+          "Explain the off-hours entries detected"
+        ] %}
+        <button class="sugg-btn" onclick="askSugg(this.textContent)">{{ s }}</button>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">AI Capabilities</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;"><strong style="color:var(--hi);">Live Database Access</strong><br>Reads your actual transactions, flags, and audit history in real time.</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;"><strong style="color:var(--hi);">Forensic Analysis</strong><br>Identifies fraud schemes, risk patterns, and compliance violations using established typologies.</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;"><strong style="color:var(--hi);">Investigation Guidance</strong><br>Recommends specific audit actions based on detected anomalies and your actual data.</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;"><strong style="color:var(--hi);">Natural Language</strong><br>Ask anything in plain English — no technical knowledge required.</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

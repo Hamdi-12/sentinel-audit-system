@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Overview — Sentinel{% endblock %}
+{% block page_title %}Audit Overview{% endblock %}
+{% block content %}
+<div id="live-stats"></div>
+<div class="stats-grid">
+  <div class="stat blue">
+    <div class="stat-icon blue"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
+    <div class="stat-label">Total Transactions</div><div class="stat-val" id="stat-tx">{{ total_tx }}</div>
+    <div class="stat-sub">KES {{ "{:,.0f}".format(total_amount) }} processed</div>
+  </div>
+  <div class="stat red">
+    <div class="stat-icon red"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div>
+    <div class="stat-label">Critical Flags</div><div class="stat-val" id="stat-high">{{ high_flags }}</div>
+    <div class="stat-sub">High severity — immediate review</div>
+  </div>
+  <div class="stat orange">
+    <div class="stat-icon orange"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+    <div class="stat-label">Open Flags</div><div class="stat-val" id="stat-open">{{ open_flags }}</div>
+    <div class="stat-sub">Pending auditor review</div>
+  </div>
+  <div class="stat green">
+    <div class="stat-icon green"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+    <div class="stat-label">Total Anomalies</div><div class="stat-val" id="stat-flags">{{ total_flags }}</div>
+    <div class="stat-sub">All detections to date</div>
+  </div>
+</div>
+<div class="g2 mb3">
+  <div class="card"><div class="card-title">Transaction Volume — Last 7 Days</div><canvas id="txChart" height="190"></canvas></div>
+  <div class="card"><div class="card-title">Anomaly Severity Distribution</div><canvas id="sevChart" height="190"></canvas></div>
+</div>
+<div class="g2 mb3">
+  <div class="card"><div class="card-title">Detection Rule Breakdown</div><canvas id="ruleChart" height="200"></canvas></div>
+  <div class="card">
+    <div class="card-title">Recent Anomaly Flags</div>
+    {% if recent_flags %}
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Payee</th><th>Rule</th><th>Severity</th><th>Time</th></tr></thead>
+      <tbody>{% for f in recent_flags %}<tr>
+        <td><strong>{{ f.transaction.payee[:28] }}</strong></td>
+        <td><span class="chip">{{ f.rule_triggered[:18] }}</span></td>
+        <td><span class="badge badge-{{ f.severity }}">{{ f.severity }}</span></td>
+        <td class="muted">{{ f.flagged_at.strftime('%b %d %H:%M') }}</td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+    <div class="mt2"><a href="{{ url_for('transactions.flags') }}" class="btn btn-ghost btn-sm">View all flags</a></div>
+    {% else %}
+    <p class="muted" style="padding:30px 0;">No anomalies detected yet. Upload transactions to begin analysis.</p>
+    <a href="{{ url_for('transactions.upload') }}" class="btn btn-primary btn-sm">Upload Transactions</a>
+    {% endif %}
+  </div>
+</div>
+{% if recent_reports %}
+<div class="card">
+  <div class="card-title">Recent Audit Reports</div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Title</th><th>Transactions</th><th>Flags</th><th>Severity</th><th>Generated</th><th></th></tr></thead>
+    <tbody>{% for r in recent_reports %}<tr>
+      <td><strong>{{ r.title }}</strong></td><td>{{ r.total_transactions }}</td><td>{{ r.total_flags }}</td>
+      <td><span class="badge badge-high">{{ r.high_severity }}H</span> <span class="badge badge-medium">{{ r.medium_severity }}M</span> <span class="badge badge-low">{{ r.low_severity }}L</span></td>
+      <td class="muted">{{ r.report_date.strftime('%Y-%m-%d %H:%M') }}</td>
+      <td><a href="{{ url_for('reports.download', report_id=r.id) }}" class="btn btn-ghost btn-xs">Download PDF</a></td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script>
+const G='rgba(255,255,255,0.06)',TX='#64748B';
+const co={plugins:{legend:{display:false}},scales:{x:{grid:{color:G},ticks:{color:TX}},y:{grid:{color:G},ticks:{color:TX,stepSize:1},beginAtZero:true}}};
+new Chart(document.getElementById('txChart'),{type:'bar',data:{labels:{{ daily_labels|tojson }}||['No data'],datasets:[{label:'Tx',data:{{ daily_values|tojson }}||[0],backgroundColor:'rgba(21,101,192,0.7)',borderRadius:5}]},options:{responsive:true,...co}});
+const sv={{ severity|tojson }};
+new Chart(document.getElementById('sevChart'),{type:'doughnut',data:{labels:['Critical','Medium','Low'],datasets:[{data:[sv.high||0,sv.medium||0,sv.low||0],backgroundColor:['rgba(239,68,68,0.8)','rgba(245,158,11,0.8)','rgba(16,185,129,0.8)'],borderWidth:2,borderColor:'#0F1E35'}]},options:{responsive:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:TX,padding:14,font:{size:11}}}}}});
+const rd={{ rule_counts|tojson }};
+new Chart(document.getElementById('ruleChart'),{type:'bar',data:{labels:rd.length?rd.map(r=>r[0]):['No flags'],datasets:[{data:rd.length?rd.map(r=>r[1]):[0],backgroundColor:['rgba(239,68,68,0.7)','rgba(245,158,11,0.7)','rgba(139,92,246,0.7)','rgba(2,136,209,0.7)'],borderRadius:5}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:G},ticks:{color:TX,stepSize:1},beginAtZero:true},y:{grid:{color:G},ticks:{color:TX}}}}});
+</script>{% endblock %}

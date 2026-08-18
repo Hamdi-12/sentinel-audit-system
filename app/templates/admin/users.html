@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}User Accounts — Sentinel{% endblock %}
+{% block page_title %}User Account Management{% endblock %}
+{% block content %}
+<div class="page-hdr">
+  <div><div class="page-h">User Accounts</div><div class="page-s">{{ users|length }} registered users</div></div>
+  <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">Create Account</a>
+</div>
+<div class="card">
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>ID</th><th>Username</th><th>Full Name</th><th>Email</th><th>Role</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+    <tbody>{% for u in users %}<tr>
+      <td class="muted">{{ u.id }}</td>
+      <td><strong>{{ u.username }}</strong></td>
+      <td class="muted">{{ u.full_name or "—" }}</td>
+      <td class="muted">{{ u.email }}</td>
+      <td><span class="badge badge-{{ u.role }}">{{ u.role.upper() }}</span></td>
+      <td><span class="badge badge-{{ 'active' if u.is_active else 'inactive' }}">{{ 'Active' if u.is_active else 'Inactive' }}</span></td>
+      <td class="muted">{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+      <td>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <form method="POST" action="{{ url_for('admin.toggle_user', user_id=u.id) }}">
+            <button class="btn btn-ghost btn-xs" {% if u.id==current_user.id %}disabled{% endif %}>{{ 'Deactivate' if u.is_active else 'Activate' }}</button>
+          </form>
+          <div>
+            <button class="btn btn-ghost btn-xs" onclick="document.getElementById('pw-{{ u.id }}').style.display='block';this.style.display='none';">Reset Password</button>
+            <div id="pw-{{ u.id }}" style="display:none;margin-top:6px;">
+              <form method="POST" action="{{ url_for('admin.reset_password', user_id=u.id) }}" style="display:flex;gap:6px;">
+                <input name="new_password" type="password" class="form-control" placeholder="New password" minlength="8" style="padding:5px 10px;font-size:12px;width:150px;">
+                <button class="btn btn-primary btn-xs" type="submit">Set</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Reports — Sentinel{% endblock %}
+{% block page_title %}Audit Reports{% endblock %}
+{% block content %}
+<div class="page-hdr">
+  <div><div class="page-h">AI Audit Reports</div></div>
+  <a href="{{ url_for('reports.generate') }}" class="btn btn-primary">Generate New Report</a>
+</div>
+<div class="card">
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Title</th><th>Transactions</th><th>Flags</th><th>Severity</th><th>Generated</th><th>By</th><th></th></tr></thead>
+    <tbody>{% for r in reports %}<tr>
+      <td class="muted">{{ r.id }}</td>
+      <td><strong>{{ r.title }}</strong></td>
+      <td>{{ r.total_transactions }}</td>
+      <td>{{ r.total_flags }}</td>
+      <td><span class="badge badge-high">{{ r.high_severity }}H</span> <span class="badge badge-medium">{{ r.medium_severity }}M</span> <span class="badge badge-low">{{ r.low_severity }}L</span></td>
+      <td class="muted">{{ r.report_date.strftime('%Y-%m-%d %H:%M') }}</td>
+      <td class="muted">{{ r.generator.username }}</td>
+      <td style="display:flex;gap:6px;">
+        <a href="{{ url_for('reports.view', report_id=r.id) }}" class="btn btn-ghost btn-xs">View</a>
+        <a href="{{ url_for('reports.download', report_id=r.id) }}" class="btn btn-primary btn-xs">Download PDF</a>
+      </td>
+    </tr>{% else %}<tr><td colspan="8" class="tbl-empty">No reports yet. Generate one above.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

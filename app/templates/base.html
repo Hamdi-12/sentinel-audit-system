@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>{% block title %}Sentinel Audit System{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/main.css') }}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+{% if current_user.is_authenticated %}
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-name">SENTI<span>NEL</span></div>
+    <div class="sb-tag">Audit Intelligence System</div>
+    <div class="sb-line"></div>
+  </div>
+  <nav class="sb-nav">
+    <a href="{{ url_for('dashboard.index') }}" class="nav-item {% if request.endpoint=='dashboard.index' %}active{% endif %}">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Overview
+    </a>
+    <div class="nav-sec">AI Intelligence</div>
+    <a href="{{ url_for('chat.index') }}" class="nav-item {% if request.blueprint=='chat' %}active{% endif %}">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      Sentinel AI Chat
+    </a>
+    <div class="nav-sec">Transactions</div>
+    <a href="{{ url_for('transactions.list_all') }}" class="nav-item {% if request.endpoint=='transactions.list_all' %}active{% endif %}">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+      All Transactions
+    </a>
+    <a href="{{ url_for('transactions.upload') }}" class="nav-item {% if request.endpoint=='transactions.upload' %}active{% endif %}">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+      Upload File
+    </a>
+    <a href="{{ url_for('transactions.manual_entry') }}" class="nav-item {% if request.endpoint=='transactions.manual_entry' %}active{% endif %}">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+      Manual Entry
+    </a>
+    <div class="nav-sec">Detection</div>
+    <a href="{{ url_for('transactions.flags') }}" class="nav-item {% if request.endpoint=='transactions.flags' %}active{% endif %}">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      Anomaly Flags
+    </a>
+    <div class="nav-sec">Reports</div>
+    <a href="{{ url_for('reports.list_all') }}" class="nav-item {% if request.endpoint=='reports.list_all' %}active{% endif %}">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Audit Reports
+    </a>
+    <a href="{{ url_for('reports.generate') }}" class="nav-item {% if request.endpoint=='reports.generate' %}active{% endif %}">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Generate Report
+    </a>
+    {% if current_user.is_admin %}
+    <div class="nav-sec">Administration</div>
+    <a href="{{ url_for('admin.index') }}" class="nav-item {% if request.endpoint=='admin.index' %}active{% endif %}">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Control Panel
+    </a>
+    <a href="{{ url_for('admin.users') }}" class="nav-item">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      User Accounts
+    </a>
+    <a href="{{ url_for('admin.logs') }}" class="nav-item">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Audit Log
+    </a>
+    {% endif %}
+  </nav>
+  <div class="sb-footer">
+    <div class="user-pill">
+      <div class="user-av">{{ current_user.username[0].upper() }}</div>
+      <div>
+        <div class="user-nm">{{ current_user.full_name or current_user.username }}</div>
+        <div class="user-rl">{{ current_user.role }}</div>
+      </div>
+    </div>
+    <a href="{{ url_for('auth.logout') }}" class="logout">Sign Out</a>
+  </div>
+</aside>
+<div class="main-wrap">
+  <header class="topbar">
+    <div class="tb-title">{% block page_title %}{% endblock %}</div>
+    <div class="tb-right">
+      <span class="tb-badge {{ current_user.role }}">{{ current_user.role.upper() }}</span>
+      <a href="{{ url_for('auth.profile') }}" class="tb-link">{{ current_user.username }}</a>
+    </div>
+  </header>
+  <main class="content">
+    {% with messages=get_flashed_messages(with_categories=true) %}
+      {% for cat,msg in messages %}
+        <div class="alert alert-{{ cat }}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% else %}
+<div style="position:fixed;top:20px;right:20px;z-index:999;width:360px;">
+  {% with messages=get_flashed_messages(with_categories=true) %}
+    {% for cat,msg in messages %}<div class="alert alert-{{ cat }}">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+</div>
+{% block auth_content %}{% endblock %}
+{% endif %}
+<script src="{{ url_for('static',filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Register — Sentinel{% endblock %}
+{% block auth_content %}
+<div class="auth-wrap">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="auth-name">SENTI<span>NEL</span></div>
+      <div class="auth-tag">Audit Intelligence System</div>
+    </div>
+    <div class="auth-tagline">
+      <h2>Join the Sentinel Platform</h2>
+      <p>Create your account to begin auditing transactions, detecting anomalies with AI, and generating professional compliance reports.</p>
+    </div>
+    <div class="auth-features">
+      <div class="auth-feat"><div class="feat-dot"></div>Upload CSV transaction files for instant AI analysis</div>
+      <div class="auth-feat"><div class="feat-dot"></div>Forensic AI report generated automatically on upload</div>
+      <div class="auth-feat"><div class="feat-dot"></div>Download full PDF audit reports with AI analysis</div>
+      <div class="auth-feat"><div class="feat-dot"></div>Chat with Sentinel AI about your audit data</div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-form" style="max-width:460px;">
+      <div class="auth-ft">Create your account</div>
+      <div class="auth-fs">All fields marked * are required.</div>
+      <form method="POST">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Username *</label><input name="username" type="text" class="form-control" required minlength="3" placeholder="Choose a username"></div>
+          <div class="form-group"><label class="form-label">Full Name</label><input name="full_name" type="text" class="form-control" placeholder="Your full name"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Email Address *</label><input name="email" type="email" class="form-control" required placeholder="your@email.com"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Password *</label><input name="password" type="password" class="form-control" required minlength="8" placeholder="Min. 8 characters"></div>
+          <div class="form-group"><label class="form-label">Confirm Password *</label><input name="password2" type="password" class="form-control" required placeholder="Repeat password"></div>
+        </div>
+        {% if current_user.is_authenticated and current_user.is_admin %}
+        <div class="form-group"><label class="form-label">Role</label>
+          <select name="role" class="form-control"><option value="auditor">Auditor</option><option value="admin">Administrator</option></select>
+        </div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;margin-top:4px;">Create Account</button>
+      </form>
+      <div class="auth-link" style="margin-top:18px;">Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
